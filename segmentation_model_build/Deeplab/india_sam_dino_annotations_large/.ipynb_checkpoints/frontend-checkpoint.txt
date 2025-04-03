@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Mask Verification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        #loadBtn {
+            background-color: #4285f4;
+            color: white;
+        }
+        #loadBtn:hover {
+            background-color: #2c75e0;
+        }
+        #approveBtn {
+            background-color: #0f9d58;
+            color: white;
+        }
+        #approveBtn:hover {
+            background-color: #0b8043;
+        }
+        #rejectBtn {
+            background-color: #db4437;
+            color: white;
+        }
+        #rejectBtn:hover {
+            background-color: #c53929;
+        }
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            overflow: hidden;
+            background-color: #eee;
+        }
+        #imageCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .slide-container {
+            width: 100%;
+            margin: 20px 0;
+        }
+        .slider {
+            width: 100%;
+        }
+        .status {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .status-item {
+            padding: 8px 12px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+        }
+        #approvedCount {
+            background-color: #e6f4ea;
+        }
+        #currentImage {
+            font-weight: bold;
+        }
+        /* Add debug panel */
+        .debug-panel {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            display: none;
+        }
+        /* Toggle for view modes */
+        .view-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .view-controls button {
+            background-color: #f1f1f1;
+            color: #333;
+            padding: 5px 10px;
+        }
+        .view-controls button.active {
+            background-color: #4285f4;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Mask Verification Tool</h1>
+        
+        <div class="image-container">
+            <canvas id="imageCanvas"></canvas>
+        </div>
+        
+        <div class="view-controls">
+            <button id="viewCombined" class="active">Combined View</button>
+            <button id="viewOriginal">Original Only</button>
+            <button id="viewMask">Mask Only</button>
+        </div>
+        
+        <div class="slide-container">
+            <label for="opacitySlider">Mask Opacity: </label>
+            <input type="range" min="0" max="100" value="50" class="slider" id="opacitySlider">
+        </div>
+        
+        <div class="controls">
+            <button id="loadBtn">Load Random Image</button>
+            <button id="approveBtn" disabled>Approve</button>
+            <button id="rejectBtn" disabled>Reject</button>
+        </div>
+        
+        <div class="status">
+            <div class="status-item" id="currentImage">No image loaded</div>
+            <div class="status-item" id="approvedCount">Approved: 0</div>
+        </div>
+        
+        <button id="toggleDebug" style="margin-top: 20px; background-color: #f1f1f1; color: #333;">Show Debug Info</button>
+        <div class="debug-panel" id="debugPanel">
+            <div>Image load status: <span id="imageStatus">Not loaded</span></div>
+            <div>Mask load status: <span id="maskStatus">Not loaded</span></div>
+            <div>Canvas dimensions: <span id="canvasDimensions">0x0</span></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        const loadBtn = document.getElementById('loadBtn');
+        const approveBtn = document.getElementById('approveBtn');
+        const rejectBtn = document.getElementById('rejectBtn');
+        const opacitySlider = document.getElementById('opacitySlider');
+        const currentImageEl = document.getElementById('currentImage');
+        const approvedCountEl = document.getElementById('approvedCount');
+        const debugPanel = document.getElementById('debugPanel');
+        const toggleDebugBtn = document.getElementById('toggleDebug');
+        const imageStatusEl = document.getElementById('imageStatus');
+        const maskStatusEl = document.getElementById('maskStatus');
+        const canvasDimensionsEl = document.getElementById('canvasDimensions');
+        const viewCombinedBtn = document.getElementById('viewCombined');
+        const viewOriginalBtn = document.getElementById('viewOriginal');
+        const viewMaskBtn = document.getElementById('viewMask');
+        
+        // Set your VM's external IP address here
+        const baseUrl = 'http://34.59.172.45:8080';
+        
+        let allImages = [];
+        let currentImage = null;
+        let approvedImages = [];
+        let originalImage = new Image();
+        let maskImage = new Image();
+        let viewMode = 'combined'; // 'combined', 'original', or 'mask'
+
+        // Toggle debug panel
+        toggleDebugBtn.addEventListener('click', function() {
+            if (debugPanel.style.display === 'none' || debugPanel.style.display === '') {
+                debugPanel.style.display = 'block';
+                toggleDebugBtn.textContent = 'Hide Debug Info';
+            } else {
+                debugPanel.style.display = 'none';
+                toggleDebugBtn.textContent = 'Show Debug Info';
+            }
+        });
+        
+        // View mode controls
+        viewCombinedBtn.addEventListener('click', function() {
+            viewMode = 'combined';
+            setActiveViewButton(viewCombinedBtn);
+            drawImages();
+        });
+        
+        viewOriginalBtn.addEventListener('click', function() {
+            viewMode = 'original';
+            setActiveViewButton(viewOriginalBtn);
+            drawImages();
+        });
+        
+        viewMaskBtn.addEventListener('click', function() {
+            viewMode = 'mask';
+            setActiveViewButton(viewMaskBtn);
+            drawImages();
+        });
+        
+        function setActiveViewButton(activeBtn) {
+            [viewCombinedBtn, viewOriginalBtn, viewMaskBtn].forEach(btn => {
+                btn.classList.remove('active');
+            });
+            activeBtn.classList.add('active');
+        }
+
+        // Fetch all available images
+        async function fetchImageList() {
+            try {
+                const response = await fetch(`${baseUrl}/imagelist`);
+                allImages = await response.json();
+                console.log(`Loaded ${allImages.length} images`);
+            } catch (error) {
+                console.error('Error fetching image list:', error);
+                alert('Error loading image list. Please check if the server is running and accessible.');
+            }
+        }
+
+        // Load a random image from the server
+        async function loadRandomImage() {
+            if (allImages.length === 0) {
+                await fetchImageList();
+            }
+            
+            // Get random image from list
+            const randomIndex = Math.floor(Math.random() * allImages.length);
+            currentImage = allImages[randomIndex];
+            currentImageEl.textContent = `Current: ${currentImage}`;
+            
+            // Enable buttons
+            approveBtn.disabled = false;
+            rejectBtn.disabled = false;
+            
+            // Reset status
+            imageStatusEl.textContent = 'Loading...';
+            maskStatusEl.textContent = 'Loading...';
+            
+            // Load the original image and its mask
+            loadImageAndMask(currentImage);
+        }
+
+        // Load image and mask, then draw them
+        function loadImageAndMask(filename) {
+            // Create new Image objects each time to prevent caching issues
+            originalImage = new Image();
+            maskImage = new Image();
+            
+            originalImage.onload = function() {
+                imageStatusEl.textContent = `Loaded (${originalImage.width}x${originalImage.height})`;
+                // Resize canvas to maintain aspect ratio
+                resizeCanvas();
+                
+                // Draw if both images are loaded
+                if (maskImage.complete) drawImages();
+            };
+            
+            originalImage.onerror = function() {
+                imageStatusEl.textContent = 'Error loading image!';
+                console.error('Failed to load image:', filename);
+            };
+            
+            maskImage.onload = function() {
+                maskStatusEl.textContent = `Loaded (${maskImage.width}x${maskImage.height})`;
+                // Draw if both images are loaded
+                if (originalImage.complete) drawImages();
+            };
+            
+            maskImage.onerror = function() {
+                maskStatusEl.textContent = 'Error loading mask!';
+                console.error('Failed to load mask for:', filename);
+            };
+            
+            // Add timestamp to prevent caching
+            const timestamp = new Date().getTime();
+            originalImage.src = `${baseUrl}/image/${filename}?t=${timestamp}`;
+            maskImage.src = `${baseUrl}/mask/${filename}?t=${timestamp}`;
+            
+            console.log('Loading image:', originalImage.src);
+            console.log('Loading mask:', maskImage.src);
+        }
+
+        // Resize canvas to fit the image while maintaining aspect ratio
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+            
+            // Set canvas dimensions to match the image
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            canvasDimensionsEl.textContent = `${canvas.width}x${canvas.height}`;
+            
+            const imgAspectRatio = originalImage.width / originalImage.height;
+            const containerAspectRatio = containerWidth / containerHeight;
+            
+            let newWidth, newHeight;
+            
+            if (imgAspectRatio > containerAspectRatio) {
+                // Image is wider than container
+                newWidth = containerWidth;
+                newHeight = containerWidth / imgAspectRatio;
+            } else {
+                // Image is taller than container
+                newHeight = containerHeight;
+                newWidth = containerHeight * imgAspectRatio;
+            }
+            
+            // Set display size (different from actual canvas dimensions)
+            canvas.style.width = `${newWidth}px`;
+            canvas.style.height = `${newHeight}px`;
+        }
+
+        // Draw original image with mask overlay
+        function drawImages() {
+            if (!originalImage.complete || !maskImage.complete) {
+                return; // Don't draw until both images are loaded
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (viewMode === 'original' || viewMode === 'combined') {
+                // Draw original image
+                ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+            }
+            
+            if (viewMode === 'mask') {
+                // Fill with white background when showing only mask
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            if (viewMode === 'combined' || viewMode === 'mask') {
+                // Add color to mask for better visibility
+                const opacity = opacitySlider.value / 100;
+                
+                if (viewMode === 'combined') {
+                    // For combined view, use semi-transparent overlay
+                    ctx.globalAlpha = opacity;
+                    ctx.globalCompositeOperation = 'source-over';
+                    
+                    // Use a colored overlay for mask
+                    ctx.drawImage(maskImage, 0, 0, canvas.width, canvas.height);
+                    
+                    // Reset composite operation
+                    ctx.globalCompositeOperation = 'source-over';
+                } else {
+                    // For mask-only view, draw at full opacity
+                    ctx.globalAlpha = 1.0;
+                    ctx.drawImage(maskImage, 0, 0, canvas.width, canvas.height);
+                }
+                
+                // Reset alpha
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // Approve the current image
+        async function approveImage() {
+            if (!currentImage) return;
+            
+            try {
+                const response = await fetch(`${baseUrl}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ filename: currentImage }),
+                });
+                
+                const result = await response.json();
+                console.log(result.message);
+                
+                // Add to local approved list if not already there
+                if (!approvedImages.includes(currentImage)) {
+                    approvedImages.push(currentImage);
+                    approvedCountEl.textContent = `Approved: ${approvedImages.length}`;
+                }
+                
+                // Load next image
+                loadRandomImage();
+            } catch (error) {
+                console.error('Error approving image:', error);
+                alert('Error approving image. Please check server connection.');
+            }
+        }
+
+        // Reject and load next image
+        function rejectImage() {
+            loadRandomImage();
+        }
+
+        // Initialize the app
+        async function init() {
+            // Set canvas size
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            canvasDimensionsEl.textContent = `${canvas.width}x${canvas.height}`;
+            
+            // Add event listeners
+            loadBtn.addEventListener('click', loadRandomImage);
+            approveBtn.addEventListener('click', approveImage);
+            rejectBtn.addEventListener('click', rejectImage);
+            opacitySlider.addEventListener('input', drawImages);
+            window.addEventListener('resize', function() {
+                if (originalImage.complete) resizeCanvas();
+                drawImages();
+            });
+            
+            // Load images list
+            await fetchImageList();
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>

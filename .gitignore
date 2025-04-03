@@ -1,0 +1,6 @@
+segmentation_model_build/Deeplab/crf_sam_annotations_large/binary_masks/
+segmentation_model_build/Deeplab/crf_sam_annotations_large/samples/
+segmentation_model_build/Deeplab/crf_sam_annotations_large/probs/
+segmentation_model_build/Deeplab/india_sam_dino_annotations_large/binary_masks/
+segmentation_model_build/Deeplab/india_sam_dino_annotations_large/samples/
+segmentation_model_build/Deeplab/crf_large_upload.py
