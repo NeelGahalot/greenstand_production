@@ -71,6 +71,16 @@ Using the trained DeepLab checkpoint:
 </p>
 ---
 
+## Stratified Sampling from a Large-Scale Image Dataset
+#  Background
+
+The production image dataset consists of over 15 million images, hosted behind a REST API. Due to the size of the dataset, it is not feasible to load all data at once, so we access it using offset-based pagination through API queries. Each API call retrieves metadata—including the image_url—for a small number of samples.
+
+How Image URLs Are Accessed
+Each image is associated with a numeric offset, and is fetched using the following query pattern:
+<pre> ```json { "trees": [ { "image_url": "https://bucket.storage.com/images/img1234.jpg", "label": "banana" } ] } ``` </pre>
+
+
 ## 🧠 Committee Polling for Robust Bounding Boxes
 
 To ensure that only **high-confidence images** are labeled:
