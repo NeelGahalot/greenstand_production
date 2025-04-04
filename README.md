@@ -2,10 +2,10 @@
 
 This project focuses on building a **robust semantic segmentation model** using a small set of annotated images and a massive corpus (15M+) of unlabeled data. We leverage a combination of classical and modern techniques including **DeepLabv3+**, **DenseCRF**, **SAM (Segment Anything)**, and a **committee polling framework** involving **DINO**, **Florence 2**, and **DeepSeek-VL-2**.
 <p align="center">
-  <img src="images/Screenshot 2025-04-03 at 9.15.29 PM.png" alt="Iterative Loop for Training" width="500"/>
+  <img src="images/Screenshot 2025-04-03 at 9.15.29 PM.png" alt="Iterative Loop for Training" width="1000"/>
 </p>
 <p align="center">
-  <img src="images/infographic.png" alt="Heatmap from DeepLab + DenseCRF" width="500"/>
+  <img src="images/infographic.png" alt="Heatmap from DeepLab + DenseCRF" width="1000"/>
 </p>
 ---
 
