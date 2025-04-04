@@ -2,12 +2,20 @@
 
 This project focuses on building a **robust semantic segmentation model** using a small set of annotated images and a massive corpus (15M+) of unlabeled data. We leverage a combination of classical and modern techniques including **DeepLabv3+**, **DenseCRF**, **SAM (Segment Anything)**, and a **committee polling framework** involving **DINO**, **Florence 2**, and **DeepSeek-VL-2**.
 
+<p align="center">
+  <img src="images/infographic.png" alt="Heatmap from DeepLab + DenseCRF" width="500"/>
+</p>
 ---
 
 ## 📊 Dataset Overview
 
-- **Labeled data**: 250 high-quality annotated plant segmentation masks
+- **Labeled data**: 250 high-quality annotated plant segmentation masks from 3 regions - East Africa, Haiti, Freetown
 - **Unlabeled data**: 15,000,000+ images (in-the-wild, diverse lighting/backgrounds)
+
+Please refer to the notebook 'make_freetown_csv' to get details about how we use a simple sampling method (to adjust for bias) to get a larger corpus for pseudo labels. The distribution we use is given here:
+<p align="center">
+  <img src="images/Screenshot 2025-04-03 at 8.04.42 PM.png" alt="Heatmap from DeepLab + DenseCRF" width="500"/>
+</p>
 
 ---
 
@@ -20,19 +28,20 @@ We begin by training a **DeepLabv3+** segmentation model on the 250 annotated im
 ---
 
 ### 2. 🧪 Pseudo-Label Generation
-
+You can train a checkpoint using the binary_leaf_main.py file. The dataset is available on s3, on treetracker-training-images, with relative path - pilot_annotations/.  
 Using the trained DeepLab checkpoint:
 
 - Generate **probability masks** on unlabeled images.
 <p align="center">
-  <img src="images/Screenshot 2025-04-02 at 10.37.41 PM.png" alt="Heatmap from DeepLab + DenseCRF" width="500"/>
+  <img src="images/Screenshot 2025-04-02 at 10.37.41 PM.png" alt="HDistribution for East Africa, from Training Images." width="500"/>
 </p>
-- Refine masks using **DenseCRF** to improve spatial coherence.
+- Refine masks using **DenseCRF** to improve spatial coherence. You can read more about DenseCRF [here](https://medium.com/@ng2436/why-control-random-field-is-still-relevant-for-post-processing-d99e88556dc2).
+
 
 - Convert masks into **bounding boxes** for object localization.
 
 <p align="center">
-  <img src="images/Screenshot 2025-04-02 at 10.54.24 PM.png" alt="Heatmap from DeepLab + DenseCRF" width="500"/>
+  <img src="images/Screenshot 2025-04-02 at 10.33.34 PM.png" alt="SAM generated mask for a bounding box prompt" width="500"/>
 </p>
 
 ---
