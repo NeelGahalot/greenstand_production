@@ -102,7 +102,10 @@ To ensure that only **high-confidence images** are labeled:
 ---
 
 ## 🔁 SAM Robustness via Perturbed Prompts
-
+<p align="center">
+  <img src="images/pp_sam_fs_fine_tuning_pipeline.jpg" alt="Iterative Loop for Training" width="1000"/>
+</p>
+Read more about this approach [here](https://github.com/SLDGroup/PP-SAM).
 To train a more **robust SAM checkpoint**, we introduce **noise and perturbations** in bounding box prompts:
 
 - Slight shifts, scaling, aspect ratio changes
