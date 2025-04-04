@@ -57,15 +57,16 @@ Using the trained DeepLab checkpoint:
 
 ### 4. 🔁 Iterative Self-Training
 <p align="center">
-  <img src="images/Screenshot 2025-04-02 at 10.54.24 PM.png" alt="SAM generated mask for a bounding box prompt" width="500"/>
+  <img src="images/Screenshot 2025-04-03 at 9.15.29 PM.png" alt="SAM generated mask for a bounding box prompt" width="500"/>
 </p>
-
 - Implement a sophisticated knowledge distillation approach using a combined loss function:
 - Cosine Similarity Loss: Aligns the student model's output distribution with SAM's high-quality probability masks
 - The combined loss guides the DeepLabv3+ model to learn from both: SAM's high-resolution feature representations and The original ground truth annotations
 - Each iteration progressively improves model quality (6% Foreground IOU improvement after first iteration)
 - The distillation process effectively transfers SAM's generalization capabilities to the more efficient DeepLabv3+ architecture
-
+<p align="center">
+  <img src="images/Screenshot 2025-04-02 at 10.54.24 PM.png" alt="SAM generated mask for a bounding box prompt" width="500"/>
+</p>
 ---
 
 ## 🧠 Committee Polling for Robust Bounding Boxes
