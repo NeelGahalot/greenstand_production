@@ -35,7 +35,7 @@ Using the trained DeepLab checkpoint:
 
 - Generate **probability masks** on unlabeled images.
 <p align="center">
-  <img src="images/Screenshot 2025-04-02 at 10.37.41 PM.png" alt="HDistribution for East Africa, from Training Images." width="500"/>
+  <img src="images/Screenshot 2025-04-02 at 10.37.41 PM.png" alt="HDistribution for East Africa, from Training Images." width="1000"/>
 </p>
 - Refine masks using **DenseCRF** to improve spatial coherence. You can read more about DenseCRF [here](https://medium.com/@ng2436/why-control-random-field-is-still-relevant-for-post-processing-d99e88556dc2).
 
@@ -43,7 +43,7 @@ Using the trained DeepLab checkpoint:
 - Convert masks into **bounding boxes** for object localization.
 
 <p align="center">
-  <img src="images/Screenshot 2025-04-02 at 10.33.34 PM.png" alt="SAM generated mask for a bounding box prompt" width="500"/>
+  <img src="images/Screenshot 2025-04-02 at 10.33.34 PM.png" alt="SAM generated mask for a bounding box prompt" width="1000"/>
 </p>
 
 ---
@@ -67,7 +67,7 @@ Using the trained DeepLab checkpoint:
 - Each iteration progressively improves model quality (6% Foreground IOU improvement after first iteration)
 - The distillation process effectively transfers SAM's generalization capabilities to the more efficient DeepLabv3+ architecture
 <p align="center">
-  <img src="images/Screenshot 2025-04-02 at 10.54.24 PM.png" alt="SAM generated mask for a bounding box prompt" width="500"/>
+  <img src="images/Screenshot 2025-04-02 at 10.54.24 PM.png" alt="SAM generated mask for a bounding box prompt" width="1000"/>
 </p>
 ---
 
