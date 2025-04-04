@@ -16,7 +16,7 @@ This project focuses on building a **robust semantic segmentation model** using 
 
 Please refer to the notebook 'make_freetown_csv' to get details about how we use a simple sampling method (to adjust for bias) to get a larger corpus for pseudo labels. The distribution we use is given here:
 <p align="center">
-  <img src="images/Screenshot 2025-04-03 at 8.04.42 PM.png" alt="Heatmap from DeepLab + DenseCRF" width="500"/>
+  <img src="images/Screenshot 2025-04-03 at 8.04.42 PM.png" alt="Heatmap from DeepLab + DenseCRF" width="1000"/>
 </p>
 
 ---
@@ -59,7 +59,7 @@ Using the trained DeepLab checkpoint:
 
 ### 4. 🔁 Iterative Self-Training
 <p align="center">
-  <img src="images/Screenshot 2025-04-03 at 9.15.29 PM.png" alt="Iterative Loop for Training" width="500"/>
+  <img src="images/Screenshot 2025-04-03 at 9.15.29 PM.png" alt="Iterative Loop for Training" width="1000"/>
 </p>
 - Implement a sophisticated knowledge distillation approach using a combined loss function:
 - Cosine Similarity Loss: Aligns the student model's output distribution with SAM's high-quality probability masks
