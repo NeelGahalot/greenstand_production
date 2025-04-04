@@ -82,7 +82,9 @@ Each image is associated with a numeric offset, and is fetched using the followi
 
 
 ## 🧠 Committee Polling for Robust Bounding Boxes
-
+<p align="center">
+  <img src="images/Screenshot 2025-04-03 at 10.03.38 PM.png" alt="Iterative Loop for Training" width="1000"/>
+</p>
 To ensure that only **high-confidence images** are labeled:
 
 ### 1. 🔍 Models Used:
